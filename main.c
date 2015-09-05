@@ -28,6 +28,9 @@ static result_t *new_result(void)
     return res;
 }
 
+/* For pretty printing */
+#define PREFIX "  "
+
 #define R(_reg, _sto) \
     __asm__ __volatile__("mov %%" #_reg ", %0" : "=r"(_sto):);
 
@@ -58,20 +61,20 @@ static result_t *new_result(void)
 static void print_symnames(addr_t addr1, addr_t addr2)
 {
     Dl_info ainfo1, ainfo2;
-    dladdr((void *)addr1, &ainfo1);
-    dladdr((void *)addr2, &ainfo2);
-    printf("((%s %s) :: (%s %s))\n",
-           ainfo1.dli_sname, ainfo1.dli_fname,
-           ainfo2.dli_sname, ainfo2.dli_fname);
+    const int ok1 = dladdr((void *)addr1, &ainfo1);
+    const int ok2 = dladdr((void *)addr2, &ainfo2);
+    printf("(%s :: %s)\n",
+           ok1 ? ainfo1.dli_sname : "", 
+           ok2 ? ainfo2.dli_sname : "");
 }
 
 static void print_regs(const result_t *res, const char *prefix)
 {
-#define PR_REG(_res, _pre, _r) {        \
-    printf("%s%3s %18p :: %18p (%9s) ", \
-            _pre, #_r,                  \
-           (void *)_res->before._r,     \
-            (void *)_res->after._r,     \
+#define PR_REG(_res, _pre, _r) {          \
+    printf("%s%-5s %-18p :: %-18p %-9s ", \
+            _pre, #_r,                    \
+           (void *)_res->before._r,       \
+            (void *)_res->after._r,       \
            _res->before._r != _res->after._r ? "Different" : "Same"); \
     print_symnames(_res->before._r, _res->after._r);                  \
 }
@@ -85,17 +88,36 @@ static void print_regs(const result_t *res, const char *prefix)
     PR_REG(res, prefix, r11);
 }
 
+/* Print column names based on print_regs() spacing */
+static void print_columns(void)
+{
+    printf("%s%-5s %-18s    %-18s %-9s SYMBOLNAME\n",
+           PREFIX, "REG", "BEFORE", "AFTER", "CHANGED");
+}
+
+static inline void print_header(void)
+{
+    printf(
+ "--------------------------------------------------------------------------\n"
+ );
+}
+
+static inline void print_footer(void)
+{
+    print_header();
+}
+
 static void show_results(void)
 {
     int i;
     const result_t *rr;
 
+    print_columns();
+    print_header();
     for (rr=results; rr; rr=rr->next) {
-        printf("==> Test %d <==\n", ++i);
-        printf("  Func: %s\n", rr->fn);
-        printf("  Args: %s\n", rr->args);
-        print_regs(rr, "  ");
-        putc('\n', stdout);
+        printf("Test %d ==> %s(%s)\n", ++i, rr->fn, rr->args);
+        print_regs(rr, PREFIX);
+        print_footer();
     }
 }
 
@@ -104,6 +126,5 @@ int main(void)
     TEST(malloc, (1234));
     TEST(free, NULL);
     show_results();
-
     return 0;
 }
