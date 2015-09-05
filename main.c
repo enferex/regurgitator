@@ -58,8 +58,8 @@ static result_t *new_result(void)
 static void print_symnames(addr_t addr1, addr_t addr2)
 {
     Dl_info ainfo1, ainfo2;
-    dladdr(addr1, &ainfo1);
-    dladdr(addr2, &ainfo2);
+    dladdr((void *)addr1, &ainfo1);
+    dladdr((void *)addr2, &ainfo2);
     printf("((%s %s) :: (%s %s))\n",
            ainfo1.dli_sname, ainfo1.dli_fname,
            ainfo2.dli_sname, ainfo2.dli_fname);
