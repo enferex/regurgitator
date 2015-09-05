@@ -1,9 +1,10 @@
 /******************************************************************************
  * main.c
  *
- * regurigator - Register Gurgitator: Reports symbols stored in registers 
- *               by a callee.  These registers can provide hints into locations
- *               into stdlib even given a randomized address space.
+ * regurgitator - Register Gurgitator: Reports symbols stored in registers 
+ *                by a callee.  These registers can provide hints into 
+ *                locations into stdlib even given a randomized 
+ *                address space.
  *
  * Copyright (C) 2015, Matt Davis (enferex)
  * This program is free software: you can redistribute it and/or modify
