@@ -1,3 +1,27 @@
+/******************************************************************************
+ * main.c
+ *
+ * regurigator - Register Gurgitator: Reports symbols stored in registers 
+ *               by a callee.  These registers can provide hints into locations
+ *               into stdlib even given a randomized address space.
+ *
+ * Copyright (C) 2015, Matt Davis (enferex)
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or (at
+ * your option) any later version.
+ *             
+ * This program is distributed in the hope that it will be
+ * useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ * PURPOSE.  See the GNU General Public License for more
+ * details.
+ *                             
+ * You should have received a copy of the GNU
+ * General Public License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/>.
+******************************************************************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/user.h>
@@ -64,8 +88,8 @@ static void print_symnames(addr_t addr1, addr_t addr2)
     const int ok1 = dladdr((void *)addr1, &ainfo1);
     const int ok2 = dladdr((void *)addr2, &ainfo2);
     printf("(%s :: %s)\n",
-           ok1 ? ainfo1.dli_sname : "", 
-           ok2 ? ainfo2.dli_sname : "");
+           ok1 ? ainfo1.dli_sname : "?", 
+           ok2 ? ainfo2.dli_sname : "?");
 }
 
 static void print_regs(const result_t *res, const char *prefix)
@@ -89,7 +113,7 @@ static void print_regs(const result_t *res, const char *prefix)
 }
 
 /* Print column names based on print_regs() spacing */
-static void print_columns(void)
+static inline void print_columns(void)
 {
     printf("%s%-5s %-18s    %-18s %-9s SYMBOLNAME\n",
            PREFIX, "REG", "BEFORE", "AFTER", "CHANGED");
@@ -121,10 +145,22 @@ static void show_results(void)
     }
 }
 
-int main(void)
+/* Add more tests here */
+static void tests(void)
 {
+    char buf[32];
+
+    /* stdlib.h tests */
+    TEST(printf, "\n");
+    TEST(fprintf, stdout, "\n");
+    TEST(sprintf, buf, "%s", "bar");
     TEST(malloc, (1234));
     TEST(free, NULL);
+}
+
+int main(void)
+{
+    tests();
     show_results();
     return 0;
 }
