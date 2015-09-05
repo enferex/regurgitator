@@ -8,5 +8,8 @@ all: $(APP)
 $(APP): $(OBJS)
 	$(CC) $^ -o $@ $(CFLAGS)
 
+test: $(APP)
+	./$(APP)
+
 clean:
 	$(RM) $(APP) $(OBJS)
