@@ -62,28 +62,26 @@ static result_t *new_result(void)
 #define CL(_reg) \
     __asm__ __volatile__("mov $0, %" #_reg "\n")
 
-#define REGS(_regs) { \
+#define _REGS(_regs) { \
     R(rcx, c);        \
     R(rdx, d);        \
-    R(rsi, si);       \
-    R(rdi, di);       \
     R(r8,  reg8);     \
     R(r9,  reg9);     \
     R(r10, reg10);    \
     R(r11, reg11);    \
-    _regs.rcx = c;  _regs.rdx = d; _regs.rsi = si;                         \
-    _regs.rdi = di; _regs.r8 = reg8; _regs.r9 = reg10; _regs.r11 = reg11;  \
-    CL(rcx); CL(rdx); CL(rsi);  CL(rdi); CL(r8); CL(r9); CL(r10); CL(r11); \
+    _regs.rcx = c;  _regs.rdx = d; _regs.r8 = reg8;        \
+    _regs.r9 = reg9; _regs.r10 = reg10; _regs.r11 = reg11; \
+    CL(rcx); CL(rdx);CL(r8); CL(r9); CL(r10); CL(r11);     \
 }
 
 #define TEST(_fn, ...) { \
-    addr_t c, d, si, di, reg8, reg9, reg10, reg11; \
+    addr_t c, d, reg8, reg9, reg10, reg11; \
     result_t *res = new_result(); \
     res->fn = #_fn;               \
     res->args = #__VA_ARGS__;     \
-    REGS(res->before);            \
+    _REGS(res->before);           \
     _fn(__VA_ARGS__);             \
-    REGS(res->after);             \
+    _REGS(res->after);            \
 }
 
 /* Display the symbol names for the given addresses */
