@@ -154,7 +154,7 @@ static void show_results(void)
     print_columns();
     print_header();
     for (rr=results; rr; rr=rr->next) {
-        printf("Test %d ==> %s(%s)", ++i, rr->fn, rr->args);
+        printf("Test %d ==> %s(%s)\n", ++i, rr->fn, rr->args);
         print_regs(rr, PREFIX);
         printf("%s%s is %llu bytes from main(), %llu bytes from malloc()\n",
                PREFIX, rr->fn, 
