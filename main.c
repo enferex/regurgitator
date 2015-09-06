@@ -99,9 +99,23 @@ static void print_symnames(addr_t addr1, addr_t addr2)
     Dl_info ainfo1, ainfo2;
     const int ok1 = dladdr((void *)addr1, &ainfo1);
     const int ok2 = dladdr((void *)addr2, &ainfo2);
-    printf("(%s :: %s)\n",
-           ok1 ? ainfo1.dli_sname : "?", 
-           ok2 ? ainfo2.dli_sname : "?");
+    const char *str1, *str2;
+
+    if (ok1 && ainfo1.dli_sname)
+      str1 = ainfo1.dli_sname;
+    else if (ok1 && ainfo1.dli_fname)
+      str1 = ainfo1.dli_fname;
+    else
+      str1 = "?";
+   
+    if (ok2 && ainfo2.dli_sname)
+      str2 = ainfo2.dli_sname;
+    else if (ok2 && ainfo2.dli_fname)
+      str2 = ainfo2.dli_fname;
+    else
+      str2 = "?";
+
+    printf("(%s :: %s)\n", str1, str2);
 }
 
 static void print_regs(const result_t *res, const char *prefix)
@@ -110,7 +124,7 @@ static void print_regs(const result_t *res, const char *prefix)
     printf("%s%-5s %-18p :: %-18p %-9s ", \
             _pre, #_r,                    \
            (void *)_res->before._r,       \
-            (void *)_res->after._r,       \
+           (void *)_res->after._r,        \
            _res->before._r != _res->after._r ? "Different" : "Same"); \
     print_symnames(_res->before._r, _res->after._r);                  \
 }
