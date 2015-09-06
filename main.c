@@ -57,7 +57,10 @@ static result_t *new_result(void)
 #define PREFIX "  "
 
 #define R(_reg, _sto) \
-    __asm__ __volatile__("mov %%" #_reg ", %0" : "=r"(_sto):);
+    __asm__ __volatile__("mov %%" #_reg ", %0\n" : "=r"(_sto))
+
+#define CL(_reg) \
+    __asm__ __volatile__("mov $0, %" #_reg "\n")
 
 #define REGS(_regs) { \
     R(rcx, c);        \
@@ -68,8 +71,9 @@ static result_t *new_result(void)
     R(r9,  reg9);     \
     R(r10, reg10);    \
     R(r11, reg11);    \
-    _regs.rcx = c;  _regs.rdx = d; _regs.rsi = si; \
-    _regs.rdi = di; _regs.r8 = reg8; _regs.r9 = reg10; _regs.r11 = reg11; \
+    _regs.rcx = c;  _regs.rdx = d; _regs.rsi = si;                         \
+    _regs.rdi = di; _regs.r8 = reg8; _regs.r9 = reg10; _regs.r11 = reg11;  \
+    CL(rcx); CL(rdx); CL(rsi);  CL(rdi); CL(r8); CL(r9); CL(r10); CL(r11); \
 }
 
 #define TEST(_fn, ...) { \
