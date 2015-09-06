@@ -38,6 +38,8 @@ typedef struct _result_t
     struct user_regs_struct after;
     const char *fn;
     const char *args;
+    addr_t dist_from_main;
+    addr_t dist_from_malloc;
     struct _result_t *next;
 } result_t;
 
@@ -62,19 +64,24 @@ static result_t *new_result(void)
 #define CL(_reg) \
     __asm__ __volatile__("mov $0, %" #_reg "\n")
 
-#define _REGS(_regs) { \
-    R(rcx, c);        \
-    R(rdx, d);        \
-    R(r8,  reg8);     \
-    R(r9,  reg9);     \
-    R(r10, reg10);    \
-    R(r11, reg11);    \
+/* Byte distance between two addresses */
+#define DIST(_a, _b) (((addr_t)(_a)>(addr_t)(_b)) ? \
+       (addr_t)(_a) - (addr_t)(_b) : \
+       (addr_t)(_b) - (addr_t)(_a))
+
+#define _REGS(_regs) do { \
+    R(rcx, c);            \
+    R(rdx, d);            \
+    R(r8,  reg8);         \
+    R(r9,  reg9);         \
+    R(r10, reg10);        \
+    R(r11, reg11);        \
     _regs.rcx = c;  _regs.rdx = d; _regs.r8 = reg8;        \
     _regs.r9 = reg9; _regs.r10 = reg10; _regs.r11 = reg11; \
     CL(rcx); CL(rdx);CL(r8); CL(r9); CL(r10); CL(r11);     \
-}
+} while (0)
 
-#define TEST(_fn, ...) { \
+#define TEST(_fn, ...) do { \
     addr_t c, d, reg8, reg9, reg10, reg11; \
     result_t *res = new_result(); \
     res->fn = #_fn;               \
@@ -82,7 +89,9 @@ static result_t *new_result(void)
     _REGS(res->before);           \
     _fn(__VA_ARGS__);             \
     _REGS(res->after);            \
-}
+    res->dist_from_main = DIST(_fn, main);     \
+    res->dist_from_malloc = DIST(_fn, malloc); \
+} while (0)
 
 /* Display the symbol names for the given addresses */
 static void print_symnames(addr_t addr1, addr_t addr2)
@@ -134,6 +143,9 @@ static inline void print_footer(void)
     print_header();
 }
 
+/* Forward decl */
+extern int main(void);
+
 static void show_results(void)
 {
     int i;
@@ -142,8 +154,12 @@ static void show_results(void)
     print_columns();
     print_header();
     for (rr=results; rr; rr=rr->next) {
-        printf("Test %d ==> %s(%s)\n", ++i, rr->fn, rr->args);
+        printf("Test %d ==> %s(%s)", ++i, rr->fn, rr->args);
         print_regs(rr, PREFIX);
+        printf("%s%s is %llu bytes from main(), %llu bytes from malloc()\n",
+               PREFIX, rr->fn, 
+               rr->dist_from_main,
+               rr->dist_from_malloc);
         print_footer();
     }
 }
