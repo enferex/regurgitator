@@ -154,6 +154,12 @@ static void tests(void)
     char buf[32];
 
     /* stdlib.h tests */
+    TEST(atof, "4.2");
+    TEST(atoi, "42");
+    TEST(atol, "42");
+    TEST(strtod, "42.0", NULL);
+    TEST(srand, 42);
+    TEST(rand, );
     TEST(printf, "\n");
     TEST(fprintf, stdout, "\n");
     TEST(sprintf, buf, "%s", "bar");
